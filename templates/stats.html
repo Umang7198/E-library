@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stats - User's Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { margin-top: 20px; }
+        .dashboard-menu { margin-bottom: 20px; }
+        .dashboard-menu a { margin-right: 15px; text-decoration: none; }
+        .dashboard-menu a.active { font-weight: bold; color: #007bff; }
+        .stats-container { margin-top: 20px; }
+        .chart { border: 1px solid #ccc; padding: 15px; }
+        /* Placeholder styles for the charts */
+        .bar-chart { height: 200px; background-image: url('bar-chart-placeholder.png'); }
+        .pie-chart { height: 200px; background-image: url('pie-chart-placeholder.png'); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>User's Dashboard</h1>
+    <div class="dashboard-menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/mybooks">MyBooks</a>
+        <a href="/books">Books</a>
+        <a href="/stats" class="active">Stats</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="stats-container">
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Books Read</h3>
+                <div class="chart bar-chart">
+                    <!-- Bar chart will be rendered here -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>Section Distribution</h3>
+                <div class="chart pie-chart">
+                    <!-- Pie chart will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script>
+    // Placeholder for chart.js initialization code
+</script>
+</body>
+</html>

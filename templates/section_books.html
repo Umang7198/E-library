@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ... other head elements ... -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <style>
+        /* Additional styles for book cards */
+        .book-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            display: inline-block; /* Or flex, depending on layout */
+            width: calc(33% - 20px); /* Adjust width for 3 columns */
+        }
+        textarea {
+            
+            width: 100%; /* You can adjust the width as per your layout needs */
+            height: 50px; /* Adjust height as needed */
+            resize: vertical; /* Allow only vertical resizing */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>{{ section.title }} - Books</h2>
+    <div>
+        {% for book in books %}
+            <div class="book-card">
+                <h3>{{ book.title }}</h3>
+                <p>Author: {{ book.author }}</p>
+                <!--<p>Content: {{ book.content }}</p>  Added content field -->
+                <!-- Form to delete a book -->
+                <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        {% else %}
+            <p>No books in this section yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Form to add a new book -->
+    <form action="{{ url_for('add_book') }}" method="post">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="text" name="author" placeholder="Author" required>
+       <!-- <textarea name="content" placeholder="Content" required></textarea> --><!-- Added textarea for content -->
+        <input type="hidden" name="section_id" value="{{ section.id }}">
+        <button type="submit" class="btn btn-primary">Add Book</button>
+    </form>
+
+    <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+</body>
+    </html>

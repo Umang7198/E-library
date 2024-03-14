@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Books - User's Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { margin-top: 20px; }
+        .dashboard-menu { margin-bottom: 20px; }
+        .dashboard-menu a { margin-right: 15px; text-decoration: none; }
+        .dashboard-menu a.active { font-weight: bold; color: #007bff; }
+        .book-list { margin-top: 20px; }
+        .book-section { margin-bottom: 20px; }
+        .book-item { padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; }
+        .book-title { font-size: 18px; }
+        .book-action { float: right; }
+        .search-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .search-button {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>User's Dashboard</h1>
+    <div class="dashboard-menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/mybooks" class="active">MyBooks</a>
+        <a href="/books">Books</a>
+        <a href="/stats">Stats</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="search-container">
+        <input class="form-control search-bar" type="search" placeholder="Search My Books" aria-label="Search">
+        <button class="btn btn-outline-success search-button" type="submit">Search</button>
+    </div>
+
+    <div class="book-section">
+        <h3>Current</h3>
+        <div class="book-item">
+            <span class="book-title">Book Title | Author | Section</span>
+            <button class="btn btn-warning book-action">Return</button>
+        </div>
+        <!-- Repeat the above div for each current book item -->
+    </div>
+    
+    <div class="book-section">
+        <h3>Completed</h3>
+        <div class="book-item">
+            <span class="book-title">Book Title | Author | Section</span>
+            <button class="btn btn-success book-action">View</button>
+        </div>
+        <!-- Repeat the above div for each completed book item -->
+    </div>
+</div>
+</body>
+</html>

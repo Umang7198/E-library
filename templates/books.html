@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User's Dashboard - Books</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { margin-top: 20px; }
+        .dashboard-menu { margin-bottom: 20px; }
+        .dashboard-menu a { margin-right: 15px; text-decoration: none; }
+        .dashboard-menu a.active { font-weight: bold; }
+        .book-list { margin-top: 20px; }
+        .book-item { padding: 10px; border-bottom: 1px solid #ccc; }
+        .book-title { font-size: 18px; }
+        .book-request { float: right; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="dashboard-menu">
+        <a href="/dashboard">User's Dashboard</a>
+        <a href="/mybooks">MyBooks</a>
+        <a href="/books" class="active">Books</a>
+        <a href="/stats">Stats</a>
+        <a href="/logout">Logout</a>
+    </div>
+    
+    <input type="text" class="form-control" placeholder="Search">
+    <button class="btn btn-default" type="submit">Search</button>
+    <button class="btn btn-default" type="button">Filter</button>
+    
+    <div class="book-list">
+        <div class="book-item">
+            <span class="book-title">Book Title | Author | Section</span>
+            <button class="btn btn-success book-request">Request</button>
+        </div>
+        <!-- Repeat the above div for each book item -->
+    </div>
+</div>
+</body>
+</html>

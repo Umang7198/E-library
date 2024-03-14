@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Add a New Book to Section {{ section_id }}</h2>
+    <form action="{{ url_for('add_book', section_id=section_id) }}" method="post">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Author</label>
+            <input type="text" class="form-control" id="author" name="author" placeholder="Enter author's name" required>
+        </div>
+        <input type="hidden" name="section_id" value="{{ section_id }}">
+        <button type="submit" class="btn btn-primary">Add Book</button>
+    </form>
+    <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Librarian's Dashboard</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<style>
+  .section-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    width: 100%; /* Adjusted for better responsiveness */
+  }
+  .section-container {
+    display: flex;
+    flex-direction: column; /* Changed for a vertical layout */
+    align-items: center; /* Center cards */
+  }
+  .add-section-btn {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    font-size: 48px;
+    line-height: 100px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="d-flex justify-content-between align-items-center my-3">
+    <h1>Librarian's Dashboard</h1>
+    <div>
+      <a href="stats.html">Stats</a> |
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </header>
+  <div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Search" aria-label="Search">
+    <div class="input-group-append">
+      <button class="btn btn-outline-secondary" type="button">Filter</button>
+    </div>
+  </div>
+  <div class="section-container">
+    {% for section in sections %}
+    <div class="section-card">
+      <h3>{{ section.title }}</h3>
+      <p><strong>Date:</strong> <span>{{ section.date_created.strftime('%d/%m/%Y') }}</span></p>
+      <p><strong>Description:</strong> <span>{{ section.description }}</span></p>
+        <a href="{{ url_for('view_books', section_id=section.id) }}" class="btn btn-primary">View Books</a>
+
+      <a href="{{ url_for('add_book', section_id=section.id) }}" class="btn btn-primary">Add Book</a>
+      <!-- Delete Section Button -->
+      <form action="{{ url_for('delete_section', section_id=section.id) }}" method="post" style="display:inline;">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+    {% else %}
+    <p>No sections added yet.</p>
+    {% endfor %}
+    <!-- Add New Section Button -->
+    <a href="{{ url_for('add_section_form') }}" class="add-section-btn btn btn-primary">+</a>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+</body>
+</html>
