@@ -18,6 +18,16 @@
 </head>
 <body>
 <div class="container">
+    <!-- Add this search form inside the <div class="container"> in section_books.html -->
+<form action="{{ url_for('view_books', section_id=section.id) }}" method="GET">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search books by title" name="query">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
     <h2>{{ section.title }} - Books</h2>
     <div>
         {% for book in books %}

@@ -65,13 +65,22 @@ def add_section():
         return redirect(url_for('librarian_dashboard'))
     return redirect(url_for('librarian_login')), 403
 
-@app.route('/librarian_dashboard')
+@app.route('/librarian_dashboard', methods=['GET', 'POST'])
 def librarian_dashboard():
-    if 'librarian_id' in session:
-        librarian_id = session['librarian_id']
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+
+    librarian_id = session['librarian_id']
+    query = request.args.get('query')  # Get the search query from URL parameters for GET request
+
+    if query:
+        # Filter sections by title containing the search query
+        sections = Section.query.filter(Section.user_id == librarian_id, Section.title.contains(query)).all()
+    else:
         sections = Section.query.filter_by(user_id=librarian_id).all()
-        return render_template('librarian_dashboard.html', sections=sections)
-    return redirect(url_for('librarian_login')), 403
+
+    return render_template('librarian_dashboard.html', sections=sections)
+
 
 
 @app.route('/librarian_login', methods=['GET', 'POST'])
@@ -208,14 +217,21 @@ def delete_book(book_id):
 
 
 
-@app.route('/sections/<int:section_id>/books')
+@app.route('/sections/<int:section_id>/books', methods=['GET', 'POST'])
 def view_books(section_id):
     if 'librarian_id' not in session:
         return redirect(url_for('librarian_login'))
 
     section = Section.query.get_or_404(section_id)
-    books = Book.query.filter_by(section_id=section_id).all()
+    query = request.args.get('query')  # or request.form.get('query') for POST
+    
+    if query:
+        books = Book.query.filter(Book.section_id == section_id, Book.title.contains(query)).all()
+    else:
+        books = Book.query.filter_by(section_id=section_id).all()
+
     return render_template('section_books.html', section=section, books=books)
+
 
 # Create the database tables
 with app.app_context():
