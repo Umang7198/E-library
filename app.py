@@ -172,25 +172,26 @@ def add_book_form(section_id):
     return render_template('add_book.html', section_id=section_id)
 
 # Add this route in your app.py
-@app.route('/add_book', methods=['POST'])
-def add_book():
+@app.route('/section/<int:section_id>/add_book', methods=['GET', 'POST'])
+def add_book(section_id):
     if 'librarian_id' not in session:
         return redirect(url_for('librarian_login'))
 
-    title = request.form['title']
-    author = request.form['author']
-    # content = request.form['content']
-    section_id = request.form['section_id']
+    if request.method == 'POST':
+        title = request.form.get('title')
+        author = request.form.get('author')
+        new_book = Book(title=title, author=author, section_id=section_id)
+        db.session.add(new_book)
+        try:
+            db.session.commit()
+            return redirect(url_for('view_books', section_id=section_id))
+        except Exception as e:
+            db.session.rollback()
+            return str(e), 500
+    else:
+        return render_template('add_book.html', section_id=section_id)
 
-    new_book = Book(title=title, author=author,  section_id=section_id)
-    
-    db.session.add(new_book)
-    try:
-        db.session.commit()
-        return redirect(url_for('view_books', section_id=section_id))  # Ensure this redirect is in place
-    except Exception as e:
-        db.session.rollback()
-        return str(e), 500  # Return an error if something goes wrong
+
 
 
 
