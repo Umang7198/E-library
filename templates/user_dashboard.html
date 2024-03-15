@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User's Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Additional CSS and JavaScript -->
+</head>
+<body>
+<div class="container">
+    <h1>User's Dashboard</h1>
+    <nav>
+        <!-- Links to other pages -->
+        <a href="{{ url_for('user_mybooks') }}">MyBooks</a> |
+        <a href="{{ url_for('user_dashboard') }}">Books</a> |
+        <a href="stats.html">Stats</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    <!-- Search and Filter Form -->
+    <form action="{{ url_for('user_dashboard') }}" method="GET" class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search books" aria-label="Search" name="query">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Filter</button>
+        </div>
+    </form>
+
+    {% for book in books %}
+<div class="book-entry">
+    <span>{{ book.title }}</span> |
+    <span>{{ book.author }}</span> |
+    <span>{{ book.section.title }}</span>
+
+    {% if book.id in issued_book_ids %}
+        <button class="btn btn-secondary" disabled>Issued</button>
+    {% elif book.id in requested_book_ids %}
+        <button class="btn btn-secondary" disabled>Requested</button>
+    {% else %}
+        <form action="{{ url_for('request_book', book_id=book.id) }}" method="post">
+            <button type="submit" class="btn btn-success">Request</button>
+        </form>
+    {% endif %}
+</div>
+{% else %}
+<p>No books available.</p>
+{% endfor %}
+    
+    
+</html>

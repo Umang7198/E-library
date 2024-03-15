@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Head contents including title and link to CSS files -->
+</head>
+<body>
+<div class="container">
+    <h2>Edit Book</h2>
+    <form action="{{ url_for('edit_book', book_id=book.id) }}" method="post">
+        <label>Title:</label>
+        <input type="text" name="title" value="{{ book.title }}">
+
+        <label>Author:</label>
+        <input type="text" name="author" value="{{ book.author }}">
+
+        <label>Content:</label>
+        <textarea name="content">{{ book.content }}</textarea>
+
+        <!-- Include other fields as necessary -->
+
+        <input type="submit" value="Save Changes">
+    </form>
+    <a href="{{ url_for('view_books', section_id=book.section_id) }}">Back to Books</a>
+</div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, url_for,session
+from flask import Flask, request, redirect, render_template, url_for,session,flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -19,6 +19,7 @@ class Section(db.Model):
     description = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     books = db.relationship('Book', back_populates='section')
+    issues = db.relationship('Issue', backref='section', lazy='dynamic')
 
 
 class User(db.Model):
@@ -30,15 +31,25 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')
     sections = db.relationship('Section', backref='librarian', lazy='dynamic')
+    issues = db.relationship('Issue', backref='user', lazy='dynamic')
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    # content = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text, nullable=True)  # Assuming e-books' content is stored as text
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     section = db.relationship('Section', back_populates='books')
-    # user_issued_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ForeignKey to user table
+    issues = db.relationship('Issue', backref='book', lazy='dynamic')
+
+class Issue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+    date_issued = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    return_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='issued')
 
 @app.route('/')
 def index():
@@ -79,29 +90,35 @@ def librarian_dashboard():
     else:
         sections = Section.query.filter_by(user_id=librarian_id).all()
 
+    # Within your librarian_dashboard route
     return render_template('librarian_dashboard.html', sections=sections)
+
 
 
 
 @app.route('/librarian_login', methods=['GET', 'POST'])
 def librarian_login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('pwd')
+        username = request.form['username']
+        password = request.form['pwd']
+        # Check the role of the user when logging in
         librarian = User.query.filter_by(username=username, role='librarian').first()
 
         if librarian and librarian.password == password:
             session['librarian_id'] = librarian.id
             return redirect(url_for('librarian_dashboard'))
         else:
-            # Handle login failure here
-            pass
+            flash('Invalid username or password, or wrong role', 'danger')
+            return render_template('librarian_login.html')
+
+    # If it's a GET request, just render the login page
     return render_template('librarian_login.html')
+
 
 
 @app.route('/logout')
 def logout():
-    session.pop('librarian_id', None)
+    session.clear()  # This will remove everything from the session
     return redirect(url_for('index'))
 
 
@@ -110,11 +127,19 @@ def user_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['pwd']
-        # Here you should add your logic to verify the username and password
-        # For simplicity, this example will just redirect to another page
-        return redirect(url_for('user_dashboard'))
+        # Check the role of the user when logging in
+        user = User.query.filter_by(username=username, role='user').first()
+
+        if user and user.password == password:
+            session['user_id'] = user.id
+            return redirect(url_for('user_dashboard'))
+        else:
+            flash('Invalid username or password, or wrong role', 'danger')
+            return render_template('user_login.html')
+
     # If it's a GET request, just render the login page
     return render_template('user_login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -137,6 +162,47 @@ def register():
         # Redirect after successful registration
         return redirect(url_for('user_login'))
     return render_template('register.html')
+
+@app.route('/user_dashboard', methods=['GET'])
+def user_dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+
+    user_id = session['user_id']
+    query = request.args.get('query')  # Get the search query from URL parameters for GET request
+
+    # Retrieve the IDs of books the user has already requested or has been issued
+    user_issues = Issue.query.filter_by(user_id=user_id).all()
+    requested_book_ids = [issue.book_id for issue in user_issues if issue.status == 'requested']
+    issued_book_ids = [issue.book_id for issue in user_issues if issue.status == 'issued']
+
+    # Filter books by search query if provided
+    if query:
+        books = Book.query.filter(Book.title.contains(query)).all()
+    else:
+        books = Book.query.all()
+
+    # Pass the list of requested and issued book IDs and all books to the template
+    return render_template(
+        'user_dashboard.html',
+        books=books,
+        requested_book_ids=requested_book_ids,
+        issued_book_ids=issued_book_ids
+    )
+
+
+
+
+@app.route('/user_mybooks', methods=['GET'])
+def user_mybooks():
+    if 'user_id' not in session:
+        flash('Please log in to view your books.', 'warning')
+        return redirect(url_for('user_login'))
+
+    user_id = session['user_id']
+    issued_books = Issue.query.filter_by(user_id=user_id, status='issued').all()
+
+    return render_template('user_mybooks.html', issued_books=issued_books)
 
 
 def add_librarians():
@@ -175,10 +241,6 @@ def delete_section(section_id):
     return redirect(url_for('librarian_dashboard'))
 
 
-@app.route('/section/<int:section_id>/add_book')
-def add_book_form(section_id):
-    # Your logic here to display the form
-    return render_template('add_book.html', section_id=section_id)
 
 # Add this route in your app.py
 @app.route('/section/<int:section_id>/add_book', methods=['GET', 'POST'])
@@ -231,6 +293,182 @@ def view_books(section_id):
         books = Book.query.filter_by(section_id=section_id).all()
 
     return render_template('section_books.html', section=section, books=books)
+
+
+@app.route('/issue_book/<int:book_id>', methods=['GET', 'POST'])
+def issue_book(book_id):
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+
+    book = Book.query.get_or_404(book_id)
+    if request.method == 'POST':
+        # Assuming there is a 'user_id' stored in session when a user logs in
+        user_id = session.get('user_id')
+        new_issue = Issue(user_id=user_id, book_id=book.id)
+        db.session.add(new_issue)
+        db.session.commit()
+        return redirect(url_for('view_books', section_id=book.section_id))
+    else:
+        # For a GET request, render the confirmation page
+        return render_template('book_issue.html', book=book, book_id=book_id, section_id=book.section_id)
+
+@app.route('/return_book/<int:book_id>', methods=['GET', 'POST'])
+def return_book(book_id):
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+
+    book = Book.query.get_or_404(book_id)
+    if request.method == 'POST':
+        # Complete the logic for returning the book
+        # This could involve finding the Issue instance and updating it
+        issue = Issue.query.filter_by(book_id=book_id).first()
+        if issue:
+            issue.return_date = datetime.utcnow()
+            db.session.commit()
+        return redirect(url_for('view_books', section_id=book.section_id))
+    else:
+        # For a GET request, render the confirmation page
+        return render_template('book_return.html', book=book, book_id=book_id, section_id=book.section_id)
+
+@app.route('/issue_books_to_user/<int:user_id>', methods=['GET', 'POST'])
+def issue_books_to_user(user_id):
+    # Display form to select books and issue them to the user
+    if request.method == 'POST':
+        book_ids = request.form.getlist('book_ids')  # Expected a list of book IDs from the form
+        for book_id in book_ids:
+            new_issue = Issue(user_id=user_id, book_id=book_id)
+            db.session.add(new_issue)
+        db.session.commit()
+        return redirect(url_for('some_route_after_issuing'))  # Redirect as appropriate
+    else:
+        books = Book.query.all()  # Or filter as necessary
+        return render_template('issue_books_to_user.html', books=books, user_id=user_id)
+
+@app.route('/revoke_book_access/<int:book_id>', methods=['POST'])
+def revoke_book_access(book_id):
+    issue = Issue.query.filter_by(book_id=book_id).first()
+    if issue:
+        issue.revoked = True  # Assuming there is a 'revoked' field in the Issue model
+        db.session.commit()
+    return redirect(url_for('some_route_after_revoking'))  # Redirect as appropriate
+
+@app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
+def edit_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    if request.method == 'POST':
+        book.title = request.form['title']
+        book.author = request.form['author']
+        book.content = request.form['content']
+        # Update other fields as necessary
+        db.session.commit()
+        return redirect(url_for('view_books', section_id=book.section_id))
+    return render_template('edit_book.html', book=book)
+
+@app.route('/assign_book/<int:book_id>', methods=['POST'])
+def assign_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    book.section_id = request.form['section_id']  # New section ID from the form
+    db.session.commit()
+    return redirect(url_for('view_books', section_id=book.section_id))
+
+@app.route('/monitor_books', methods=['GET'])
+def monitor_books():
+    if 'librarian_id' not in session:
+        flash('You need to login as a librarian!', 'warning')
+        return redirect(url_for('librarian_login'))
+
+    # Fetch only requests with 'requested' status
+    requested_issues = Issue.query.filter_by(status='requested').all()
+    return render_template('monitor_books.html', issues=requested_issues)
+
+
+
+@app.route('/section/<int:section_id>/add_book', methods=['GET'])
+def add_book_form(section_id):
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+    
+    # Assuming you pass necessary data to your template, if any.
+    return render_template('add_book.html', section_id=section_id)
+
+@app.route('/request_book/<int:book_id>', methods=['POST'])
+def request_book(book_id):
+    if 'user_id' not in session:
+        flash('You need to login first!', 'warning')
+        return redirect(url_for('user_login'))
+
+    user_id = session['user_id']
+    book = Book.query.get_or_404(book_id)  # Make sure the book exists
+    existing_issue = Issue.query.filter_by(book_id=book_id, user_id=user_id).first()
+
+    if existing_issue:
+        flash('You have already requested this book.', 'info')
+    else:
+        # Since you have a relationship set up, you can get the section_id from the book
+        new_issue = Issue(user_id=user_id, book_id=book.id, section_id=book.section_id, status='requested')
+        db.session.add(new_issue)
+        try:
+            db.session.commit()
+            flash('Your request has been sent to the librarian.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while processing your request.', 'danger')
+
+    return redirect(url_for('user_dashboard'))
+
+    
+    return redirect(url_for('user_dashboard'))
+@app.route('/view_requests', methods=['GET'])
+def view_requests():
+    if 'librarian_id' not in session:
+        flash('You need to login as a librarian!', 'warning')
+        return redirect(url_for('librarian_login'))
+
+    # Fetch only requests with 'requested' status
+    requested_issues = Issue.query.filter_by(status='requested').all()
+    return render_template('view_requests.html', issues=requested_issues)
+
+
+@app.route('/approve_request/<int:issue_id>', methods=['POST'])
+def approve_request(issue_id):
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+    
+    issue = Issue.query.get_or_404(issue_id)
+    issue.status = 'approved'  # Update status to 'approved'
+    db.session.commit()
+    # Add logic for what should happen when a book is approved
+    flash('Book access approved.', 'success')
+    return redirect(url_for('view_requests'))
+
+@app.route('/revoke_request/<int:issue_id>', methods=['POST'])
+def revoke_request(issue_id):
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+    
+    issue = Issue.query.get_or_404(issue_id)
+    issue.status = 'revoked'  # Update status to 'revoked'
+    db.session.commit()
+    # Add logic for what should happen when a book is revoked
+    flash('Book access revoked.', 'success')
+    return redirect(url_for('view_requests'))
+
+@app.route('/issue_book_to_user/<int:issue_id>', methods=['POST'])
+def issue_book_to_user(issue_id):
+    if 'librarian_id' not in session:
+        flash('Please log in as a librarian.', 'warning')
+        return redirect(url_for('librarian_login'))
+    
+    issue = Issue.query.get_or_404(issue_id)
+    # Change the status to 'issued' to indicate the book has been issued
+    issue.status = 'issued'
+    issue.date_issued = datetime.utcnow()  # Set the current time as the issue date
+    # Optional: Set a return date if your application requires it
+    # issue.return_date = datetime.utcnow() + timedelta(days=30)  # For example, set 30 days from now as the return date
+    db.session.commit()
+    flash('Book issued successfully.', 'success')
+    return redirect(url_for('monitor_books'))
+
 
 
 # Create the database tables

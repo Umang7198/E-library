@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitor Books</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Additional styles here -->
+</head>
+<body>
+<div class="container">
+    <h1>Monitor Books</h1>
+    <div>
+        {% for issue in issues %}
+            <div class="request-entry">
+                <p>
+                    <strong>Book Title:</strong> {{ issue.book.title }}<br>
+                    <strong>Issued To:</strong> {{ issue.user.name }}<br>
+                    <strong>Date Issued:</strong> {{ issue.date_issued }}<br>
+                    <strong>Return Date:</strong> {{ issue.return_date }}
+                </p>
+                <form action="{{ url_for('issue_book_to_user', issue_id=issue.id) }}" method="post">
+                    <button type="submit" class="btn btn-success">Issue</button>
+                </form>
+            </div>
+        {% else %}
+            <p>No pending requests.</p>
+        {% endfor %}
+    </div>
+    <a href="{{ url_for('librarian_dashboard') }}">Back to Dashboard</a>
+</div>
+
+</body>
+</html>

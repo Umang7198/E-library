@@ -11,43 +11,45 @@
             border-radius: 8px;
             padding: 20px;
             margin: 10px 0;
-            display: inline-block; /* Or flex, depending on layout */
-            width: calc(33% - 20px); /* Adjust width for 3 columns */
+            display: inline-block; /* Adjust for responsive layout */
+            width: calc(33% - 20px); /* Three items per row */
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Add this search form inside the <div class="container"> in section_books.html -->
-<form action="{{ url_for('view_books', section_id=section.id) }}" method="GET">
-    <div class="input-group mb-3">
+    <form action="{{ url_for('view_books', section_id=section.id) }}" method="GET" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Search books by title" name="query">
         <div class="input-group-append">
             <button class="btn btn-outline-secondary" type="submit">Search</button>
         </div>
-    </div>
-</form>
+    </form>
 
     <h2>{{ section.title }} - Books</h2>
     <div>
         {% for book in books %}
-            <div class="book-card">
-                <h3>{{ book.title }}</h3>
-                <p>Author: {{ book.author }}</p>
-                <!-- The delete book form -->
-                <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
+        <div class="book-card">
+            <h3>{{ book.title }}</h3>
+            <p>Author: {{ book.author }}</p>
+            <p>Content: {{ book.content | safe }}</p> <!-- Displaying book content safely -->
+            <p>Issued: {{ book.date_issued }}</p>
+            <p>Return by: {{ book.return_date }}</p>
+            <!-- Links for issuing and returning books -->
+            <a href="{{ url_for('issue_book', book_id=book.id) }}" class="btn btn-primary">Issue</a>
+            <a href="{{ url_for('return_book', book_id=book.id) }}" class="btn btn-warning">Return</a>
+            <!-- Delete Book Button -->
+            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
         {% else %}
-            <p>No books in this section yet.</p>
+        <p>No books in this section yet.</p>
         {% endfor %}
     </div>
-    <!-- Link to add a new book -->
     <a href="{{ url_for('add_book', section_id=section.id) }}" class="btn btn-primary">Add Book</a>
-    <!-- Back to dashboard link -->
     <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 </body>
 </html>

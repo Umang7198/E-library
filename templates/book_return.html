@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Book</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Return Book</h2>
+    <form action="{{ url_for('return_book', book_id=book_id) }}" method="post">
+        <p>Are you sure you want to return "{{ book.title }}" by "{{ book.author }}"?</p>
+        <button type="submit" class="btn btn-primary">Confirm Return</button>
+    </form>
+    <a href="{{ url_for('view_books', section_id=section_id) }}" class="btn btn-secondary">Cancel</a>
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Issued Books</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Additional styles here -->
+</head>
+<body>
+<div class="container">
+    <h1>My Issued Books</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Author</th>
+                <th>Date Issued</th>
+                <th>Return Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issued_books %}
+            <tr>
+                <td>{{ issue.book.title }}</td>
+                <td>{{ issue.book.author }}</td>
+                <td>{{ issue.date_issued.strftime('%Y-%m-%d') }}</td>
+                <td>{{ issue.return_date.strftime('%Y-%m-%d') if issue.return_date else 'Not set' }}</td>
+                <td>{{ issue.status }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No issued books found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
+</div>
+
+</body>
+</html>
