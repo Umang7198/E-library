@@ -35,8 +35,6 @@
             <p>Issued: {{ book.date_issued }}</p>
             <p>Return by: {{ book.return_date }}</p>
             <!-- Links for issuing and returning books -->
-            <a href="{{ url_for('issue_book', book_id=book.id) }}" class="btn btn-primary">Issue</a>
-            <a href="{{ url_for('return_book', book_id=book.id) }}" class="btn btn-warning">Return</a>
             <!-- Delete Book Button -->
             <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
                 <input type="hidden" name="_method" value="DELETE">

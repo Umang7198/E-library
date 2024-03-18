@@ -1,7 +1,9 @@
 from flask import Flask, request, redirect, render_template, url_for,session,flash
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 
 app = Flask(__name__)
@@ -47,9 +49,21 @@ class Issue(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
-    date_issued = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    date_issued = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(50), nullable=False, default='issued')
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    book = db.relationship('Book', backref='feedback')
+    user = db.relationship('User', backref='feedback')
+
 
 @app.route('/')
 def index():
@@ -265,17 +279,45 @@ def add_book(section_id):
 
 
 
-
 @app.route('/delete_book/<int:book_id>', methods=['POST'])
 def delete_book(book_id):
     if 'librarian_id' not in session:
+        flash('Please log in as a librarian to delete books.', 'warning')
         return redirect(url_for('librarian_login'))
-
+    
     book_to_delete = Book.query.get_or_404(book_id)
-    db.session.delete(book_to_delete)
-    db.session.commit()
+    
+    # Check if there are any issues associated with the book
+    issues = Issue.query.filter_by(book_id=book_id).all()
+    
+    if issues:
+        # Option 1: Prevent deletion and inform the user
+        # flash('This book cannot be deleted because it has associated issues.', 'danger')
+        # return redirect(url_for('librarian_dashboard'))
+    
+        # Option 2: Cascade delete (Dangerous: you will lose the issues data)
+        for issue in issues:
+            db.session.delete(issue)
+        db.session.delete(book_to_delete)
 
-    return redirect(url_for('view_books', section_id=book_to_delete.section_id))
+        # Option 3: Reassign or update the issues before deleting the book
+        # for issue in issues:
+        #     issue.book_id = None  # or some other logic to handle the orphaned issue
+        #     db.session.commit()
+
+    else:
+        # If there are no associated issues, it's safe to delete the book
+        db.session.delete(book_to_delete)
+    
+    try:
+        db.session.commit()
+        flash('Book deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(str(e), 'danger')  # This will display the actual error to the user.
+    
+    return redirect(url_for('librarian_dashboard'))
+
 
 
 
@@ -312,23 +354,41 @@ def issue_book(book_id):
         # For a GET request, render the confirmation page
         return render_template('book_issue.html', book=book, book_id=book_id, section_id=book.section_id)
 
-@app.route('/return_book/<int:book_id>', methods=['GET', 'POST'])
-def return_book(book_id):
-    if 'librarian_id' not in session:
-        return redirect(url_for('librarian_login'))
+    
+@app.route('/return_book/<int:issue_id>', methods=['POST'])
+def return_book(issue_id):
+    # Get the issue by its ID
+    issue = Issue.query.get_or_404(issue_id)
 
-    book = Book.query.get_or_404(book_id)
-    if request.method == 'POST':
-        # Complete the logic for returning the book
-        # This could involve finding the Issue instance and updating it
-        issue = Issue.query.filter_by(book_id=book_id).first()
-        if issue:
-            issue.return_date = datetime.utcnow()
-            db.session.commit()
-        return redirect(url_for('view_books', section_id=book.section_id))
+    # Check if a librarian is logged in
+    if 'librarian_id' in session:
+        # Librarian logic here
+        # A librarian can process the return regardless of the user who issued the book
+        issue.status = 'returned'
+        issue.return_date = datetime.now()
+        db.session.commit()
+        flash('Book return processed.', 'success')
+        # Redirect to librarian's view, which shows all books
+        return redirect(url_for('librarian_dashboard'))
+
+    # If not a librarian, check for a logged in user
+    elif 'user_id' in session and session['user_id'] == issue.user_id:
+        # User logic here
+        # A user can only return a book they have issued
+        issue.status = 'returned'
+        issue.return_date = datetime.now()
+        db.session.delete(issue)
+
+        db.session.commit()
+        flash('Book returned successfully.', 'success')
+        # Redirect to the user's view of their books
+        return redirect(url_for('user_mybooks'))
+
     else:
-        # For a GET request, render the confirmation page
-        return render_template('book_return.html', book=book, book_id=book_id, section_id=book.section_id)
+        # If no valid session is found, redirect to the login page with a warning message
+        flash('You are not authorized to perform this action.', 'warning')
+        return redirect(url_for('login'))  # Assuming 'login' is the route for the login page
+
 
 @app.route('/issue_books_to_user/<int:user_id>', methods=['GET', 'POST'])
 def issue_books_to_user(user_id):
@@ -394,30 +454,35 @@ def add_book_form(section_id):
 @app.route('/request_book/<int:book_id>', methods=['POST'])
 def request_book(book_id):
     if 'user_id' not in session:
-        flash('You need to login first!', 'warning')
+        flash('You need to log in first!', 'warning')
         return redirect(url_for('user_login'))
 
     user_id = session['user_id']
     book = Book.query.get_or_404(book_id)  # Make sure the book exists
-    existing_issue = Issue.query.filter_by(book_id=book_id, user_id=user_id).first()
-
-    if existing_issue:
-        flash('You have already requested this book.', 'info')
-    else:
-        # Since you have a relationship set up, you can get the section_id from the book
-        new_issue = Issue(user_id=user_id, book_id=book.id, section_id=book.section_id, status='requested')
-        db.session.add(new_issue)
-        try:
-            db.session.commit()
-            flash('Your request has been sent to the librarian.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('An error occurred while processing your request.', 'danger')
-
-    return redirect(url_for('user_dashboard'))
-
     
+    # Since each book belongs to a section, you can use the book's section_id
+    section_id = book.section_id  # Assuming that each book has a section_id
+
+    # Check if the book has already been requested or issued to prevent duplicate requests
+    existing_issue = Issue.query.filter_by(book_id=book_id, user_id=user_id).first()
+    if existing_issue:
+        flash('You have already requested or issued this book.', 'info')
+        return redirect(url_for('user_dashboard'))
+
+    # Create a new issue with the necessary section_id
+    new_issue = Issue(user_id=user_id, book_id=book_id, section_id=section_id, status='requested', date_issued=datetime.now())
+    db.session.add(new_issue)
+    try:
+        db.session.commit()
+        flash('Your request has been sent to the librarian.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while processing your request. Please try again.', 'danger')
+
     return redirect(url_for('user_dashboard'))
+
+
+
 @app.route('/view_requests', methods=['GET'])
 def view_requests():
     if 'librarian_id' not in session:
@@ -428,18 +493,20 @@ def view_requests():
     requested_issues = Issue.query.filter_by(status='requested').all()
     return render_template('view_requests.html', issues=requested_issues)
 
-
 @app.route('/approve_request/<int:issue_id>', methods=['POST'])
 def approve_request(issue_id):
     if 'librarian_id' not in session:
+        flash('You must be logged in as a librarian to approve requests.', 'danger')
         return redirect(url_for('librarian_login'))
     
     issue = Issue.query.get_or_404(issue_id)
-    issue.status = 'approved'  # Update status to 'approved'
+    issue.status = 'issued'
+    # Set date_issued and optionally due_date if you want
+    issue.date_issued = datetime.now()
+    issue.due_date = datetime.now() + timedelta(days=14)  # e.g., 2 weeks from now
     db.session.commit()
-    # Add logic for what should happen when a book is approved
-    flash('Book access approved.', 'success')
-    return redirect(url_for('view_requests'))
+    flash('Book issue approved.', 'success')
+    return redirect(url_for('librarian_dashboard'))
 
 @app.route('/revoke_request/<int:issue_id>', methods=['POST'])
 def revoke_request(issue_id):
@@ -453,21 +520,39 @@ def revoke_request(issue_id):
     flash('Book access revoked.', 'success')
     return redirect(url_for('view_requests'))
 
+from datetime import datetime, timedelta
+
 @app.route('/issue_book_to_user/<int:issue_id>', methods=['POST'])
 def issue_book_to_user(issue_id):
+    # Ensure the librarian is logged in
     if 'librarian_id' not in session:
         flash('Please log in as a librarian.', 'warning')
         return redirect(url_for('librarian_login'))
-    
+
+    # Find the issue record and update it
     issue = Issue.query.get_or_404(issue_id)
-    # Change the status to 'issued' to indicate the book has been issued
     issue.status = 'issued'
-    issue.date_issued = datetime.utcnow()  # Set the current time as the issue date
-    # Optional: Set a return date if your application requires it
-    # issue.return_date = datetime.utcnow() + timedelta(days=30)  # For example, set 30 days from now as the return date
+    issue.date_issued = datetime.utcnow()
+    issue.due_date = issue.date_issued + timedelta(days=7)  # Set the due date to 7 days from today
     db.session.commit()
     flash('Book issued successfully.', 'success')
+
     return redirect(url_for('monitor_books'))
+
+
+def revoke_overdue_books():
+    overdue_issues = Issue.query.filter(Issue.due_date < datetime.now(), Issue.status == 'issued').all()
+    for issue in overdue_issues:
+        issue.status = 'overdue'
+    db.session.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=revoke_overdue_books, trigger='interval', days=1)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown(wait=False))
+
 
 
 
