@@ -31,17 +31,31 @@
         <div class="book-card">
             <h3>{{ book.title }}</h3>
             <p>Author: {{ book.author }}</p>
-           <!-- <p>Content: {{ book.content | safe }}</p>  Displaying book content safely -->
-           <p>Pages: {{ book.pages if book.pages else 'N/A' }}</p>
-
-            <p>Issued: {{ book.date_issued }}</p>
-            <p>Return by: {{ book.return_date }}</p>
+            <p>Pages: {{ book.pages if book.pages else 'N/A' }}</p>
+           {% set issued_users = [] %}
+           {% for issue in book.issues %}
+               {% if issue.status == 'issued' %}
+                   {% set issued_users = issued_users.append(issue.user.name) %}
+               {% endif %}
+               
+           {% endfor %}
+           {% if issued_users %}
+               <p>Issued To:</p>
+               <ul>
+                   {% for user_name in issued_users %}
+                       <li>{{ user_name }}</li>
+                   {% endfor %}
+               </ul>
+           {% else %}
+               <p>Status: Available</p>
+           {% endif %}
             <!-- Links for issuing and returning books -->
             <!-- Delete Book Button -->
             <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
                 <input type="hidden" name="_method" value="DELETE">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
+
         </div>
         {% else %}
         <p>No books in this section yet.</p>

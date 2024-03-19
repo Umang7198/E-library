@@ -17,7 +17,7 @@ db = SQLAlchemy(app)
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     description = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     books = db.relationship('Book', back_populates='section')
@@ -33,7 +33,8 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')
     sections = db.relationship('Section', backref='librarian', lazy='dynamic')
-    issues = db.relationship('Issue', backref='user', lazy='dynamic')
+    issues = db.relationship('Issue', foreign_keys="[Issue.user_id]", backref='user', lazy='dynamic')
+    librarian_actions = db.relationship('Issue', foreign_keys="[Issue.librarian_id]", backref='librarian', lazy='dynamic')
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,21 +49,13 @@ class Issue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    librarian_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Assuming librarians are also users
+
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     date_issued = db.Column(db.DateTime, default=datetime.now, nullable=False)
     due_date = db.Column(db.DateTime, nullable=True)
-    return_date = db.Column(db.DateTime, nullable=True)
+    # return_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(50), nullable=False, default='issued')
-
-class Feedback(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    comment = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    book = db.relationship('Book', backref='feedback')
-    user = db.relationship('User', backref='feedback')
 
 
 @app.route('/')
@@ -346,10 +339,12 @@ def issue_book(book_id):
 
     book = Book.query.get_or_404(book_id)
     if request.method == 'POST':
-        # Assuming there is a 'user_id' stored in session when a user logs in
-        user_id = session.get('user_id')
-        new_issue = Issue(user_id=user_id, book_id=book.id)
-        db.session.add(new_issue)
+        librarian_id = session.get('librarian_id')
+        user_id = request.form.get('user_id')
+
+    # Create or update the Issue record
+        issue = Issue(book_id=book_id, user_id=user_id, librarian_id=librarian_id, status='issued')
+        db.session.add(issue)
         db.session.commit()
         return redirect(url_for('view_books', section_id=book.section_id))
     else:
