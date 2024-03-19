@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,12 +61,21 @@
                 <strong>Date Issued:</strong> {{ issue.date_issued.strftime('%Y-%m-%d') }}<br>
                 <strong>Due Date:</strong> {{ issue.due_date.strftime('%Y-%m-%d') if issue.due_date else 'Calculating...' }}
             </div>
-            <!-- Flex container for the buttons -->
             <div class="action-buttons">
+                <!-- Check if the issue is revoked or overdue -->
+                {% if issue.revoked or issue.due_date < current_time %}
+                <div class="revoked">
+                    Access to this book has been revoked due to overdue.
+                    <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
+                        <button type="submit" class="btn btn-return">Return</button>
+                    </form>
+                </div>
+                {% else %}
                 <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
                     <button type="submit" class="btn btn-return">Return</button>
                 </form>
                 <a href="{{ url_for('serve_pdf', book_id=issue.book.id) }}" target="_blank" class="btn btn-view">Read</a>
+                {% endif %}
             </div>
         </div>
         {% else %}
@@ -74,5 +84,6 @@
     </div>
     <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
 </div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 </body>
 </html>

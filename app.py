@@ -42,7 +42,6 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    pages = db.Column(db.Integer)  # Add this line for the number of pages
     pdf_file = db.Column(db.String(200))
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     section = db.relationship('Section', back_populates='books')
@@ -57,7 +56,7 @@ class Issue(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     date_issued = db.Column(db.DateTime, default=datetime.now, nullable=False)
     due_date = db.Column(db.DateTime, nullable=True)
-    # return_date = db.Column(db.DateTime, nullable=True)
+    revoked = db.Column(db.Boolean, default=False, nullable=False)
     status = db.Column(db.String(50), nullable=False, default='issued')
 
 
@@ -211,8 +210,9 @@ def user_mybooks():
 
     user_id = session['user_id']
     issued_books = Issue.query.filter_by(user_id=user_id, status='issued').all()
+    current_time = datetime.now()
 
-    return render_template('user_mybooks.html', issued_books=issued_books)
+    return render_template('user_mybooks.html', issued_books=issued_books,current_time=current_time)
 
 
 def add_librarians():
@@ -269,7 +269,7 @@ def add_book(section_id):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOADED_PDFS_DEST'], filename))
 
-            new_book = Book(title=title, author=author, pages=pages, section_id=section_id, pdf_file=filename)
+            new_book = Book(title=title, author=author,  section_id=section_id, pdf_file=filename)
             db.session.add(new_book)
             try:
                 db.session.commit()
@@ -332,7 +332,7 @@ def delete_book(book_id):
         db.session.rollback()
         flash(str(e), 'danger')  # This will display the actual error to the user.
     
-    return redirect(url_for('librarian_dashboard'))
+    return redirect(url_for('view_books',section_id=book_to_delete.section_id))
 
 
 
@@ -371,15 +371,20 @@ def serve_pdf(book_id):
         abort(403)
 
     book = Book.query.get(book_id)
-    issue = Issue.query.filter_by(book_id=book.id, user_id=session['user_id'], status='issued').first()
+    issue = Issue.query.filter_by(
+        book_id=book.id, 
+        user_id=session['user_id'], 
+        status='issued'
+    ).first()
 
-    if not issue:
-        # The book hasn't been issued to the user
+    if not issue or issue.revoked or datetime.now() > issue.due_date:
+        # Access is revoked either explicitly or due to overdue
         abort(403)
 
-    # Assuming your PDFs are stored in 'static/pdfs/' and 'pdf_filename' contains the filename of the PDF
+    # Serve the PDF as before
     pdf_url = url_for('static', filename=f'pdfs/{book.pdf_file}')
     return redirect(pdf_url)
+
 
 @app.route('/issue_book/<int:book_id>', methods=['GET', 'POST'])
 def issue_book(book_id):
@@ -451,13 +456,6 @@ def issue_books_to_user(user_id):
         books = Book.query.all()  # Or filter as necessary
         return render_template('issue_books_to_user.html', books=books, user_id=user_id)
 
-@app.route('/revoke_book_access/<int:book_id>', methods=['POST'])
-def revoke_book_access(book_id):
-    issue = Issue.query.filter_by(book_id=book_id).first()
-    if issue:
-        issue.revoked = True  # Assuming there is a 'revoked' field in the Issue model
-        db.session.commit()
-    return redirect(url_for('some_route_after_revoking'))  # Redirect as appropriate
 
 @app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
 def edit_book(book_id):
@@ -560,17 +558,6 @@ def approve_request(issue_id):
     flash('Book issue approved.', 'success')
     return redirect(url_for('librarian_dashboard'))
 
-@app.route('/revoke_request/<int:issue_id>', methods=['POST'])
-def revoke_request(issue_id):
-    if 'librarian_id' not in session:
-        return redirect(url_for('librarian_login'))
-    
-    issue = Issue.query.get_or_404(issue_id)
-    issue.status = 'revoked'  # Update status to 'revoked'
-    db.session.commit()
-    # Add logic for what should happen when a book is revoked
-    flash('Book access revoked.', 'success')
-    return redirect(url_for('view_requests'))
 
 from datetime import datetime, timedelta
 
@@ -584,7 +571,7 @@ def issue_book_to_user(issue_id):
     # Find the issue record and update it
     issue = Issue.query.get_or_404(issue_id)
     issue.status = 'issued'
-    issue.date_issued = datetime.utcnow()
+    issue.date_issued = datetime.now()
     issue.due_date = issue.date_issued + timedelta(days=7)  # Set the due date to 7 days from today
     db.session.commit()
     flash('Book issued successfully.', 'success')
@@ -593,17 +580,24 @@ def issue_book_to_user(issue_id):
 
 
 def revoke_overdue_books():
-    overdue_issues = Issue.query.filter(Issue.due_date < datetime.now(), Issue.status == 'issued').all()
+    overdue_issues = Issue.query.filter(
+        Issue.due_date < datetime.now(), 
+        Issue.status == 'issued',
+        Issue.revoked == False  # Make sure we don't process already revoked issues
+    ).all()
+    
     for issue in overdue_issues:
-        issue.status = 'overdue'
+        issue.revoked = True
     db.session.commit()
 
+# Initialize the scheduler
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=revoke_overdue_books, trigger='interval', days=1)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown(wait=False))
+
 
 
 
