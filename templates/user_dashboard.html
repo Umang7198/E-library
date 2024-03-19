@@ -7,47 +7,39 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <!-- Additional CSS and JavaScript -->
     <style>
-        .dashboard-container {
-             margin-top: 20px;
-             padding: 20px;
-         }
-    
-         .section-header {
-             background-color: #f4f4f4;
-             border-bottom: 1px solid #ddd;
-             padding: 10px 15px;
-             font-weight: bold;
-         }
-         .book-listing {
-             margin-bottom: 20px;
-         }
-         .book-item {
-             background-color: #ffffff;
-             border: 1px solid #ddd;
-             padding: 10px 15px;
-             margin-bottom: 10px;
-         }
-         .book-info {
-             margin-bottom: 5px;
-         }
-         .text-muted {
-             color: #6c757d;
-         }
-         .btn-return {
-             color: #fff;
-             background-color: #f0ad4e;
-             border-color: #eea236;
-         }
-         .btn-view {
-             color: #fff;
-             background-color: #5cb85c;
-             border-color: #4cae4c;
-         }
-         /* Additional styles here */
-     </style>
+        .book-header, .book-entry {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .book-title, .book-author, .book-section, .book-action {
+            flex: 1;
+            padding: 0.375rem 0.75rem; /* Bootstrap's default padding for inputs and buttons */
+            text-align: left;
+        }
+        .book-action {
+            text-align: right;
+        }
+        .book-header {
+            font-weight: bold;
+            background-color: #f8f9fa; /* Light grey background similar to Bootstrap's default table header */
+        }
+        .book-entry:nth-child(even) {
+            background-color: #f2f2f2; /* Zebra striping for entries */
+        }
+    </style>
 </head>
 <body>
 <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
     <h1>User's Dashboard</h1>
     <nav>
         <!-- Links to other pages -->
@@ -64,28 +56,39 @@
             <button class="btn btn-outline-secondary" type="submit">Filter</button>
         </div>
     </form>
+    <div class="book-header">
+        <div class="book-title">Title</div>
+        <div class="book-author">Author</div>
+        <div class="book-section">Section</div>
+        <div class="book-action">Action</div>
+    </div>
 
     {% for book in books %}
-<div class="book-entry">
-    <span>{{ book.title }}</span> |
-    <span>{{ book.author }}</span> |
-    <span>{{ book.section.title }}</span>
-
-    {% if book.id in issued_book_ids %}
-        <button class="btn btn-secondary" disabled>Issued</button>
-         <!-- Feedback form for each book -->
-         
-    {% elif book.id in requested_book_ids %}
-        <button class="btn btn-secondary" disabled>Requested</button>
+    <div class="book-entry">
+        <div class="book-title">
+            {{ book.title }}
+        </div>
+        <div class="book-author">
+            {{ book.author }}
+        </div>
+        <div class="book-section">
+            {{ book.section.title }}
+        </div>
+        <div class="book-action col-sm-4 text-right">
+            {% if book.id in issued_book_ids %}
+                <button class="btn btn-secondary" disabled>Issued</button>
+            {% elif book.id in requested_book_ids %}
+                <button class="btn btn-secondary" disabled>Requested</button>
+            {% else %}
+                <form action="{{ url_for('request_book', book_id=book.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success">Request</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
     {% else %}
-        <form action="{{ url_for('request_book', book_id=book.id) }}" method="post">
-            <button type="submit" class="btn btn-success">Request</button>
-        </form>
-    {% endif %}
-</div>
-{% else %}
-<p>No books available.</p>
-{% endfor %}
+    <p>No books available.</p>
+    {% endfor %}
     
-    
+</body>
 </html>

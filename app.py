@@ -455,6 +455,11 @@ def request_book(book_id):
         return redirect(url_for('user_login'))
 
     user_id = session['user_id']
+    current_requests_count = Issue.query.filter_by(user_id=user_id, status='requested').count()
+    if current_requests_count >= 5:
+        flash('You cannot request more than 5 e-books.', 'warning')
+        return redirect(url_for('user_dashboard'))  # Redirect them back to the dashboard
+
     book = Book.query.get_or_404(book_id)  # Make sure the book exists
     
     # Since each book belongs to a section, you can use the book's section_id
