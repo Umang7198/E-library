@@ -21,6 +21,15 @@
     <button onclick="history.back();" class="btn btn-light back-button">&#x2190;</button>
 
 <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
     <h2 class="mt-5">User Login</h2>
     <form action="/user_login" method="post">
         <div class="form-group">

@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <title>User's Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Additional styles here -->
     <style>
         .dashboard-container {
             margin-top: 20px;
             padding: 20px;
         }
-   
+        .action-buttons {
+            display: flex;
+            gap: 10px; /* Adds space between the buttons */
+        }
         .section-header {
             background-color: #f4f4f4;
             border-bottom: 1px solid #ddd;
@@ -58,9 +60,13 @@
                 <strong>Date Issued:</strong> {{ issue.date_issued.strftime('%Y-%m-%d') }}<br>
                 <strong>Due Date:</strong> {{ issue.due_date.strftime('%Y-%m-%d') if issue.due_date else 'Calculating...' }}
             </div>
-            <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
-                <button type="submit" class="btn btn-return">Return</button>
-            </form>
+            <!-- Flex container for the buttons -->
+            <div class="action-buttons">
+                <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
+                    <button type="submit" class="btn btn-return">Return</button>
+                </form>
+                <a href="{{ url_for('serve_pdf', book_id=issue.book.id) }}" target="_blank" class="btn btn-view">Read</a>
+            </div>
         </div>
         {% else %}
         <div class="text-muted">No issued books found.</div>

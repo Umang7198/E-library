@@ -1,16 +1,18 @@
-from flask import Flask, request, redirect, render_template, url_for,session,flash
+from flask import Flask, request, redirect, render_template, url_for,session,flash,send_from_directory, abort,session 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
-
+app.config['UPLOADED_PDFS_DEST'] = 'static/pdfs'
+ALLOWED_EXTENSIONS = {'pdf'}
 db = SQLAlchemy(app)
 
 # Define the Section model
@@ -41,6 +43,7 @@ class Book(db.Model):
     title = db.Column(db.String(150), nullable=False)
     author = db.Column(db.String(100), nullable=False)
     pages = db.Column(db.Integer)  # Add this line for the number of pages
+    pdf_file = db.Column(db.String(200))
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     section = db.relationship('Section', back_populates='books')
     issues = db.relationship('Issue', backref='book', lazy='dynamic')
@@ -247,7 +250,8 @@ def delete_section(section_id):
             db.session.commit()
     return redirect(url_for('librarian_dashboard'))
 
-
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Add this route in your app.py
 @app.route('/section/<int:section_id>/add_book', methods=['GET', 'POST'])
@@ -259,7 +263,24 @@ def add_book(section_id):
         title = request.form.get('title')
         author = request.form.get('author')
         pages = request.form.get('pages', type=int)  # Get pages as an integer
+        file = request.files['pdf_file']
 
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            new_book = Book(title=title, author=author, pages=pages, section_id=section_id, pdf_file=filename)
+            db.session.add(new_book)
+            try:
+                db.session.commit()
+                flash('Book added successfully.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('Error adding book: ' + str(e), 'danger')
+
+            return redirect(url_for('view_books', section_id=section_id))
+        else:
+            flash('Invalid file type. Only PDFs are allowed.', 'danger')
         new_book = Book(title=title, author=author,pages=pages, section_id=section_id)
         db.session.add(new_book)
         try:
@@ -331,6 +352,22 @@ def view_books(section_id):
 
     return render_template('section_books.html', section=section, books=books)
 
+@app.route('/books/pdf/<int:book_id>')
+def serve_pdf(book_id):
+    if 'user_id' not in session:
+        # User is not logged in
+        abort(403)
+
+    book = Book.query.get(book_id)
+    issue = Issue.query.filter_by(book_id=book.id, user_id=session['user_id'], status='issued').first()
+
+    if not issue:
+        # The book hasn't been issued to the user
+        abort(403)
+
+    # Assuming your PDFs are stored in 'static/pdfs/' and 'pdf_filename' contains the filename of the PDF
+    pdf_url = url_for('static', filename=f'pdfs/{book.pdf_file}')
+    return redirect(pdf_url)
 
 @app.route('/issue_book/<int:book_id>', methods=['GET', 'POST'])
 def issue_book(book_id):
@@ -350,6 +387,7 @@ def issue_book(book_id):
     else:
         # For a GET request, render the confirmation page
         return render_template('book_issue.html', book=book, book_id=book_id, section_id=book.section_id)
+
 
     
 @app.route('/return_book/<int:issue_id>', methods=['POST'])
