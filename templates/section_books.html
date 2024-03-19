@@ -31,7 +31,9 @@
         <div class="book-card">
             <h3>{{ book.title }}</h3>
             <p>Author: {{ book.author }}</p>
-            <p>Content: {{ book.content | safe }}</p> <!-- Displaying book content safely -->
+           <!-- <p>Content: {{ book.content | safe }}</p>  Displaying book content safely -->
+           <p>Pages: {{ book.pages if book.pages else 'N/A' }}</p>
+
             <p>Issued: {{ book.date_issued }}</p>
             <p>Return by: {{ book.return_date }}</p>
             <!-- Links for issuing and returning books -->

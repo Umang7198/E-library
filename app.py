@@ -39,7 +39,7 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=True)  # Assuming e-books' content is stored as text
+    pages = db.Column(db.Integer)  # Add this line for the number of pages
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     section = db.relationship('Section', back_populates='books')
     issues = db.relationship('Issue', backref='book', lazy='dynamic')
@@ -265,7 +265,9 @@ def add_book(section_id):
     if request.method == 'POST':
         title = request.form.get('title')
         author = request.form.get('author')
-        new_book = Book(title=title, author=author, section_id=section_id)
+        pages = request.form.get('pages', type=int)  # Get pages as an integer
+
+        new_book = Book(title=title, author=author,pages=pages, section_id=section_id)
         db.session.add(new_book)
         try:
             db.session.commit()
