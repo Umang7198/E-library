@@ -5,8 +5,21 @@
     <meta charset="UTF-8">
     <title>User Login</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: White; /* Bootstrap dark grey */
+            color: black; /* White text color */
+            border: 1px solid #343a40; /* 
+        }
+       
+    </style>
 </head>
 <body>
+    <button onclick="history.back();" class="btn btn-light back-button">&#x2190;</button>
+
 <div class="container">
     <h2 class="mt-5">User Login</h2>
     <form action="/user_login" method="post">
@@ -20,6 +33,7 @@
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
         <a href="{{ url_for('register') }}" class="btn btn-link">Register New User</a>
+
 </form>
 </div>
 </body>

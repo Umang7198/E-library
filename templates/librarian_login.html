@@ -4,8 +4,21 @@
     <meta charset="UTF-8">
     <title>Librarian Login</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: White; /* Bootstrap dark grey */
+            color: black; /* White text color */
+            border: 1px solid #343a40; /* 
+        }
+       
+    </style>
 </head>
 <body>
+    <button onclick="history.back();" class="btn btn-light back-button">&#x2190;</button>
+
 <div class="container">
     <h2 class="mt-5">Librarian Login</h2>
     <!-- Update the action attribute to point to the librarian_dashboard.html page -->
