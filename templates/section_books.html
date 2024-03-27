@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Section Books</title>
+    <title>{{ section.title }} - Books</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
         .book-card {
@@ -12,7 +12,7 @@
             padding: 20px;
             margin: 10px 0;
             display: inline-block; /* Adjust for responsive layout */
-            width: calc(33% - 20px); /* Three items per row */
+            width: calc(33% - 20px); /* Three items per row, adjust as necessary for your layout */
         }
     </style>
 </head>
@@ -32,38 +32,41 @@
             <h3>{{ book.title }}</h3>
             <p>Author: {{ book.author }}</p>
             <p>Pages: {{ book.pages if book.pages else 'N/A' }}</p>
-           {% set issued_users = [] %}
-           {% for issue in book.issues %}
-               {% if issue.status == 'issued' %}
-                   {% set issued_users = issued_users.append(issue.user.name) %}
-               {% endif %}
-               
-           {% endfor %}
-           {% if issued_users %}
-               <p>Issued To:</p>
-               <ul>
-                   {% for user_name in issued_users %}
-                       <li>{{ user_name }}</li>
-                   {% endfor %}
-               </ul>
-           {% else %}
-               <p>Status: Not Issued</p>
-           {% endif %}
-            <!-- Links for issuing and returning books -->
-            <!-- Delete Book Button -->
-            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
-                <input type="hidden" name="_method" value="DELETE">
-                <button type="submit" class="btn btn-danger">Delete</button>
+
+           <!-- Inside the book-card div, before the issue details -->
+            <form action="{{ url_for('view_books', section_id=section.id) }}" method="get">
+                <input type="hidden" name="book_id" value="{{ book.id }}">
+                <select name="user_id" onchange="this.form.submit()" class="form-control mb-2">
+                    <option value="">Select user</option>
+                    {% for issue in book.issues %}
+                        {% if issue.status == 'issued' %}
+                            <option value="{{ issue.user_id }}" {% if issue.user_id|string == request.args.get('user_id', '') %}selected{% endif %}>
+                                {{ issue.user.name }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
             </form>
 
+
+            <!-- Display the selected user's issue details -->
+            {% if selected_issue and selected_issue.book_id == book.id %}
+                <p>Issued To: {{ selected_issue.user.name }}</p>
+                <p>Issued Date: {{ selected_issue.date_issued.strftime('%Y-%m-%d') }}</p>
+                <p>Due Date: {{ selected_issue.due_date.strftime('%Y-%m-%d') if selected_issue.due_date else 'N/A' }}</p>
+            {% endif %}
+
+            <!-- Delete Book Button -->
+            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
         </div>
         {% else %}
         <p>No books in this section yet.</p>
         {% endfor %}
     </div>
-    <a href="{{ url_for('add_book', section_id=section.id) }}" class="btn btn-primary">Add Book</a>
+    <a href="{{ url_for('add_book_form', section_id=section.id) }}" class="btn btn-primary">Add Book</a>
     <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 </body>
 </html>

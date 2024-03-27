@@ -267,7 +267,7 @@ def add_book(section_id):
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['UPLOADED_PDFS_DEST'], filename))
 
             new_book = Book(title=title, author=author, pages=pages, section_id=section_id, pdf_file=filename)
             db.session.add(new_book)
@@ -343,14 +343,26 @@ def view_books(section_id):
         return redirect(url_for('librarian_login'))
 
     section = Section.query.get_or_404(section_id)
-    query = request.args.get('query')  # or request.form.get('query') for POST
+    query = request.args.get('query')
+    user_id = request.args.get('user_id')
+    book_id = request.args.get('book_id')
     
+    selected_issue = None
+    if user_id and book_id:
+        try:
+            user_id = int(user_id)
+            book_id = int(book_id)
+            selected_issue = Issue.query.filter_by(book_id=book_id, user_id=user_id, status='issued').first()
+        except ValueError:
+            flash('Invalid user or book selection.', 'warning')
+
     if query:
         books = Book.query.filter(Book.section_id == section_id, Book.title.contains(query)).all()
     else:
         books = Book.query.filter_by(section_id=section_id).all()
 
-    return render_template('section_books.html', section=section, books=books)
+    return render_template('section_books.html', section=section, books=books, selected_issue=selected_issue)
+
 
 @app.route('/books/pdf/<int:book_id>')
 def serve_pdf(book_id):
