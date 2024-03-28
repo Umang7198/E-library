@@ -1,45 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User's Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Additional CSS and JavaScript -->
-    <style>
-        .book-header, .book-entry {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .book-title, .book-author, .book-section, .book-action {
-            flex: 1;
-            padding: 0.375rem 0.75rem; /* Bootstrap's default padding for inputs and buttons */
-            text-align: left;
-        }
-        .book-action {
-            text-align: right;
-        }
-        .book-header {
-            font-weight: bold;
-            background-color: #f8f9fa; /* Light grey background similar to Bootstrap's default table header */
-        }
-        .book-entry:nth-child(even) {
-            background-color: #f2f2f2; /* Zebra striping for entries */
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+<div>
+  
     <h1>User's Dashboard</h1>
     <nav>
         <!-- Links to other pages -->
@@ -48,11 +16,12 @@
     </nav>
 
     <!-- Search and Filter Form -->
-    <form action="{{ url_for('user_dashboard') }}" method="GET" class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Search books" aria-label="Search" name="query">
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="submit">Filter</button>
+    <form action="{{ url_for('user_dashboard') }}" method="GET" class='search'>
+        <input type="text" placeholder="Search sections" aria-label="Search" name="query">
+        <div>
+            <button  type="submit">Search</button>
         </div>
+        
     </form>
     <div class="book-header">
         <div class="book-title">Title</div>
@@ -60,7 +29,7 @@
         <div class="book-section">Section</div>
         <div class="book-action">Action</div>
     </div>
-
+<hr>
     {% for book in books %}
     <div class="book-entry">
         <div class="book-title">
@@ -72,14 +41,14 @@
         <div class="book-section">
             {{ book.section.title }}
         </div>
-        <div class="book-action col-sm-4 text-right">
+        <div class="book-action">
             {% if book.id in issued_book_ids %}
-                <button class="btn btn-secondary" disabled>Issued</button>
+                <button  disabled>Issued</button>
             {% elif book.id in requested_book_ids %}
-                <button class="btn btn-secondary" disabled>Requested</button>
+                <button disabled>Requested</button>
             {% else %}
-                <form action="{{ url_for('request_book', book_id=book.id) }}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-success">Request</button>
+                <form action="{{ url_for('request_book', book_id=book.id) }}" method="post" >
+                    <button type="submit" class='btn-success'>Request</button>
                 </form>
             {% endif %}
         </div>

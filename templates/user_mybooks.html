@@ -1,89 +1,50 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html >
 <head>
-    <meta charset="UTF-8">
     <title>User's Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <style>
-        .dashboard-container {
-            margin-top: 20px;
-            padding: 20px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px; /* Adds space between the buttons */
-        }
-        .section-header {
-            background-color: #f4f4f4;
-            border-bottom: 1px solid #ddd;
-            padding: 10px 15px;
-            font-weight: bold;
-        }
-        .book-listing {
-            margin-bottom: 20px;
-        }
-        .book-item {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            padding: 10px 15px;
-            margin-bottom: 10px;
-        }
-        .book-info {
-            margin-bottom: 5px;
-        }
-        .text-muted {
-            color: #6c757d;
-        }
-        .btn-return {
-            color: #fff;
-            background-color: #f0ad4e;
-            border-color: #eea236;
-        }
-        .btn-view {
-            color: #fff;
-            background-color: #5cb85c;
-            border-color: #4cae4c;
-        }
-        /* Additional styles here */
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
 </head>
 <body>
-<div class="container dashboard-container">
+<div >
     <h1>My Issued Books</h1>
-    <div class="book-listing">
-        <div class="section-header">Current Issued Books</div>
+    <div >
+        <div class="section-header-mybook">Current Issued Books</div>
         {% for issue in issued_books %}
+        <br>
+
         <div class="book-item">
-            <div class="book-info">
+            <div class="book-info-mybook">
                 <strong>Title:</strong> {{ issue.book.title }}<br>
                 <strong>Author:</strong> {{ issue.book.author }}<br>
                 <strong>Date Issued:</strong> {{ issue.date_issued.strftime('%Y-%m-%d') }}<br>
                 <strong>Due Date:</strong> {{ issue.due_date.strftime('%Y-%m-%d') if issue.due_date else 'Calculating...' }}
             </div>
-            <div class="action-buttons">
+            <div class="action-buttons-mybook" >
                 <!-- Check if the issue is revoked or overdue -->
                 {% if issue.revoked or issue.due_date < current_time %}
-                <div class="revoked">
+                <div>
                     Access to this book has been revoked due to overdue.
                     <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
-                        <button type="submit" class="btn btn-return">Return</button>
+                        <button type="submit">Return</button>
                     </form>
                 </div>
                 {% else %}
-                <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post">
-                    <button type="submit" class="btn btn-return">Return</button>
+                <form action="{{ url_for('return_book', issue_id=issue.id) }}" method="post" onsubmit="return confirm('Are you sure you want to return the book?');">
+                    <button type="submit">Return</button>
                 </form>
-                <a href="{{ url_for('serve_pdf', book_id=issue.book.id) }}" target="_blank" class="btn btn-view">Read</a>
+                <form action="{{ url_for('serve_pdf', book_id=issue.book.id) }}" method="GET">
+                    <button>Read</button>
+                </form>
                 {% endif %}
             </div>
         </div>
         {% else %}
-        <div class="text-muted">No issued books found.</div>
+        <div>No issued books found.</div>
         {% endfor %}
     </div>
-    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    <br>
+    <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
 </div>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,105 @@
+/* General Styles */
+.container {
+    width: 50%; /* Adjust width as necessary */
+    margin: 50px auto; /* Center the form in the page */
+
+}
+.form-group {
+    margin-bottom: 10px;
+}
+.form-control {
+    width: 100%;
+    line-height: 1.5;
+
+}
+.box{
+    border-width: 100%;
+}
+.btn-edit{
+    background-color: #63bcda;
+
+}
+.btn-success {
+    background-color: #4CAF50;
+
+}
+.btn-danger {
+    background-color: #f44336;
+}
+button {
+    border: 1px solid #ccc;      
+    padding: 10px 10px;
+    cursor: pointer;
+    
+}
+
+
+/* add_book.html Styles */
+/* librarian_dashboard.html Styles */
+.section {
+    border: 1px solid;
+    padding: 20px;
+    margin: 10px;
+}
+.search {
+    text-align: right; /* Example style, adjust as needed */
+    margin: 20px 0; /* Add some margin around the search form */
+}
+.section-actions {
+    display: flex; /* This will layout the child elements (forms) inline */
+    justify-content: start; /* Align items to the start of the container */
+    gap: 10px; /* Optional: adds some space between the buttons */
+}
+
+/* section_books.html Styles */
+.book {
+    border: 1px solid;
+    padding: 20px;
+    margin: 10px;
+    display: inline-block; /* Adjust for responsive layout */
+}
+
+/* user_dashboard.html and user_mybooks.html Shared Styles */
+h1 {
+    text-align: center;
+}
+.action-buttons, .book-info, .section-header {
+    display: flex;
+    gap: 10px; /* Adds space between the buttons */
+    border-bottom: 1px solid #ddd;
+    padding: 10px 15px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.book-header, .book-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.book-title, .book-author, .book-section, .book-action {
+    flex: 1;
+    text-align: left;
+}
+.book-action {
+    text-align: right;
+}
+.book-header {
+    font-weight: bold;
+}
+.book-entry:nth-child(even) {
+    background-color: #f2f2f2; /* Zebra striping for entries */
+}
+.action-buttons-mybook {
+    display: flex;
+    gap: 10px; /* Adds space between the buttons */
+}
+
+.section-header-mybook {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 15px;
+    font-weight: bold;
+}
+.book-info-mybook {
+    margin-bottom: 5px;
+}

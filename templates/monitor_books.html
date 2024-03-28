@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>Monitor Books</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Additional styles here -->
 </head>
 <body>
-<div class="container">
+<div>
     <h1>Monitor Books</h1>
     <div>
         {% for issue in issues %}
-            <div class="request-entry">
+            <div >
                 <p>
                     <strong>Book Title:</strong> {{ issue.book.title }}<br>
                     <strong>Issued To:</strong> {{ issue.user.name }}<br>
@@ -19,7 +17,7 @@
                     <strong>Return Date:</strong> {{ issue.return_date }}
                 </p>
                 <form action="{{ url_for('issue_book_to_user', issue_id=issue.id) }}" method="post">
-                    <button type="submit" class="btn btn-success">Issue</button>
+                    <button type="submit">Issue</button>
                 </form>
             </div>
         {% else %}

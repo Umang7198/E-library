@@ -1,42 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ section.title }} - Books</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <style>
-        .book-card {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 10px 0;
-            display: inline-block; /* Adjust for responsive layout */
-            width: calc(33% - 20px); /* Three items per row, adjust as necessary for your layout */
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    <form action="{{ url_for('view_books', section_id=section.id) }}" method="GET" class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Search books by title" name="query">
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="submit">Search</button>
+<div>
+    <form action="{{ url_for('view_books', section_id=section.id) }}" method="GET" >
+        <input type="text"  placeholder="Search books by title" name="query">
+        <div >
+            <button type="submit">Search</button>
         </div>
     </form>
 
     <h2>{{ section.title }} - Books</h2>
     <div>
         {% for book in books %}
-        <div class="book-card">
+        <div class="book">
             <h3>{{ book.title }}</h3>
             <p>Author: {{ book.author }}</p>
-            <p>Pages: {{ book.pages if book.pages else 'N/A' }}</p>
 
            <!-- Inside the book-card div, before the issue details -->
             <form action="{{ url_for('view_books', section_id=section.id) }}" method="get">
                 <input type="hidden" name="book_id" value="{{ book.id }}">
-                <select name="user_id" onchange="this.form.submit()" class="form-control mb-2">
+                <select name="user_id" onchange="this.form.submit()" >
                     <option value="">Select user</option>
                     {% for issue in book.issues %}
                         {% if issue.status == 'issued' %}
@@ -57,16 +45,16 @@
             {% endif %}
 
             <!-- Delete Book Button -->
-            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-danger">Delete</button>
+            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                <button type="submit" class='btn-danger' >Delete</button>
             </form>
         </div>
         {% else %}
         <p>No books in this section yet.</p>
         {% endfor %}
     </div>
-    <a href="{{ url_for('add_book_form', section_id=section.id) }}" class="btn btn-primary">Add Book</a>
-    <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    <a href="{{ url_for('add_book', section_id=section.id) }}">Add Book</a> | 
+    <a href="{{ url_for('librarian_dashboard') }}" >Back to Dashboard</a>
 </div>
 </body>
 </html>

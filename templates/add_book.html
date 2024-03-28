@@ -1,30 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Book</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+
 </head>
 <body>
 <div class="container">
     <h2>Add a New Book to Section</h2>
     <form action="{{ url_for('add_book', section_id=section_id) }}" method="post" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title" required>
+            <label for="title">Title :     </label>
+            <input type="text"  class="form-control" name="title" placeholder="Enter book title" required>
         </div>
         <div class="form-group">
-            <label for="author">Author</label>
-            <input type="text" class="form-control" id="author" name="author" placeholder="Enter author's name" required>
+            <label for="author">Author : </label>
+            <input type="text" class="form-control" name="author" placeholder="Enter author's name" required>
         </div>
         
         <div class="form-group">
-            <input type="file" name="pdf_file" accept=".pdf" required>
+            <label>Upload the file: </label>
+            <input type="file" name="pdf_file"  accept=".pdf" required>
         </div>
-        <div class="form-group d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Add Book</button>
-            <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        <div class="form-group">
+            <button type="submit" class='btn-success'>Add Book</button> | 
+            <a href="{{ url_for('librarian_dashboard') }}" >Back to Dashboard</a>
         </div>
     </form>
 </div>
