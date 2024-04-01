@@ -1,7 +1,7 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from config import db
+from migrations.config import db
 
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)

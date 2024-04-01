@@ -1,8 +1,8 @@
 
 import os
-from models import User, Section, Book, Issue  # Adjust the import path according to your project structure
-import routes
-from config import app, db
+from migrations.models import User, Section, Book, Issue  # Adjust the import path according to your project structure
+import migrations.routes as routes
+from migrations.config import app, db
 
 
 

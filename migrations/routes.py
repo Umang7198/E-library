@@ -1,8 +1,8 @@
 from flask import Flask, request, redirect, render_template, url_for, session,abort
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit,os
-from config import app,db
-from models import User, Section, Book, Issue
+from migrations.config import app,db
+from migrations.models import User, Section, Book, Issue
 from datetime import datetime,timedelta
 
 ALLOWED_EXTENSIONS = {'pdf'}
