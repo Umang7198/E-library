@@ -377,6 +377,7 @@ def issue_book_to_user(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     issue.status = 'issued'
     issue.date_issued = datetime.now()
+    issue.librarian_id = session['librarian_id']  # Set the librarian who issued the book
     issue.due_date = issue.date_issued + timedelta(days=7)  # Set the due date to 7 days from today
     db.session.commit()
 
