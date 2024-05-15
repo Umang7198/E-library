@@ -2,28 +2,38 @@
 <html>
 <head>
     <title>Edit Section</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Add your custom styles here */
+    </style>
 </head>
 <body>
-<div >
-    <header>
-        <h2>Edit Section</h2>
-    </header>
-    <form method="POST" action="{{ url_for('update_section', section_id=section.id) }}">
-        <div class="form-group">
-            <label for="title">Title:</label>
-            <input type="text" class="form-control" name="title" id="title" value="{{ section.title }}" required>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Edit Section</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_section', section_id=section.id) }}">
+                        <div class="form-group">
+                            <label for="title">Title:</label>
+                            <input type="text" class="form-control" name="title" id="title" value="{{ section.title }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description:</label>
+                            <textarea class="form-control" name="description" id="description" rows="3" required>{{ section.description }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Update Section</button>
+                    </form>
+                    <form action="{{ url_for('librarian_dashboard') }}" method="GET">
+                        <button type="submit" class="btn btn-danger btn-block mt-3">Cancel</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="description">Description:</label>
-            <textarea class="form-control" name="description" id="description" rows="3" required>{{ section.description }}</textarea>
-        </div>
-        <button type="submit" class="btn btn-success">Update Section</button>
-        <form action="{{ url_for('librarian_dashboard') }}" method="GET" >
-            <button type="submit" class="btn-danger">Cancel</button>
-        </form>
-    </form>
+    </div>
 </div>
 </body>
 </html>

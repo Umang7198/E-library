@@ -3,7 +3,49 @@
 <head>
     <title>User's Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .dashboard-container {
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px; /* Adds space between the buttons */
+        }
+        .section-header {
+            background-color: #f4f4f4;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            font-weight: bold;
+        }
+        .book-listing {
+            margin-bottom: 20px;
+        }
+        .book-item {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+        }
+        .book-info {
+            margin-bottom: 5px;
+        }
+        .text-muted {
+            color: #6c757d;
+        }
+        .btn-return {
+            color: #fff;
+            background-color: #f0ad4e;
+            border-color: #eea236;
+        }
+        .btn-view {
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+        }
+        /* Additional styles here */
+    </style>
 </head>
 <body>
 <div >

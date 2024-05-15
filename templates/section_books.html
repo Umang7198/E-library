@@ -3,7 +3,17 @@
 <head>
     <title>{{ section.title }} - Books</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .book-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            display: inline-block; /* Adjust for responsive layout */
+            width: calc(33% - 20px); /* Three items per row, adjust as necessary for your layout */
+        }
+    </style>
 </head>
 <body>
 <div>
