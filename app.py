@@ -3,6 +3,8 @@ import os
 from migrations.models import User, Section, Book, Issue  # Adjust the import path according to your project structure
 import migrations.routes as routes
 from migrations.config import app, db
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
 
 
 
@@ -35,4 +37,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         add_librarians()
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

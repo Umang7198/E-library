@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set environment variables
+export FLASK_APP=app.py
+
 # Initialize the SQLite database
 flask db upgrade
 
