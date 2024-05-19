@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
-# Set environment variables
-export FLASK_APP=app.py
+# Create necessary directories
+mkdir -p /app/migrations
 
-# Initialize the SQLite database
-flask db upgrade
+# Initialize the database
+python /app/init_db.py
 
-# Run the Gunicorn server
+
+# Run the Flask application
 exec gunicorn --bind 0.0.0.0:5000 app:app
