@@ -224,7 +224,12 @@ def add_book(section_id):
         return render_template('add_book.html', section_id=section_id)
 
 
-
+@app.route('/revoke_issue/<int:issue_id>', methods=['POST'])
+def revoke_issue(issue_id):
+    issue = Issue.query.get_or_404(issue_id)
+    issue.status = 'returned'
+    db.session.commit()
+    return redirect(request.referrer)
 
 @app.route('/delete_book/<int:book_id>', methods=['POST'])
 def delete_book(book_id):
