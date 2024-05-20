@@ -105,6 +105,14 @@ h1 {
     align-items: center;
     margin-bottom: 10px;
 }
+
+
+.book-item {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+}
 .book-title, .book-author, .book-section, .book-action {
     flex: 1;
     padding: 0.375rem 0.75rem; /* Bootstrap's default padding for inputs and buttons */
