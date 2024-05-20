@@ -7,8 +7,7 @@
 
 </head>
 <body>
-    <button onclick="history.back();">Back</button>
-
+    <button onclick="window.location.href='{{ url_for('user_login') }}';" class="back-button">Back</button>
 <div class="container">
     <h2>User Registration</h2>
     <form action="/register" method="post">

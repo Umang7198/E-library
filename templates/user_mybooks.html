@@ -86,7 +86,8 @@
         {% endfor %}
     </div>
     <br>
-    <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
+    
+    <button onclick="window.location.href='{{ url_for('user_dashboard') }}';" class="back-button">Back</button>
 </div>
 </body>
 </html>

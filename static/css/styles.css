@@ -41,10 +41,39 @@ button {
     padding: 20px;
     margin: 10px;
 }
-.search {
-    text-align: right; /* Example style, adjust as needed */
-    margin: 20px 0; /* Add some margin around the search form */
+.title {
+    text-align: center;
+    margin-bottom: 20px;
 }
+.search-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.search-box input[type="text"] {
+    width: 10cm;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+.search-box button {
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+}
+.book-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    display: inline-block;
+    width: calc(33% - 20px);
+}
+
 .section-actions {
     display: flex; /* This will layout the child elements (forms) inline */
     justify-content: start; /* Align items to the start of the container */
@@ -71,7 +100,6 @@ h1 {
     font-weight: bold;
     margin-bottom: 5px;
 }
-
 .book-header, .book-entry {
     display: flex;
     align-items: center;
@@ -79,6 +107,7 @@ h1 {
 }
 .book-title, .book-author, .book-section, .book-action {
     flex: 1;
+    padding: 0.375rem 0.75rem; /* Bootstrap's default padding for inputs and buttons */
     text-align: left;
 }
 .book-action {
@@ -86,6 +115,7 @@ h1 {
 }
 .book-header {
     font-weight: bold;
+    background-color: #f8f9fa; /* Light grey background similar to Bootstrap's default table header */
 }
 .book-entry:nth-child(even) {
     background-color: #f2f2f2; /* Zebra striping for entries */
@@ -102,4 +132,29 @@ h1 {
 }
 .book-info-mybook {
     margin-bottom: 5px;
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #6c757d; /* Bootstrap dark grey */
+    color: white; /* White text color */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #5a6268; /* Slightly darker shade */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.back-button:active {
+    background-color: #545b62; /* Even darker shade */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

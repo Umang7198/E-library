@@ -5,28 +5,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <!-- Additional CSS and JavaScript -->
-    <style>
-        .book-header, .book-entry {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .book-title, .book-author, .book-section, .book-action {
-            flex: 1;
-            padding: 0.375rem 0.75rem; /* Bootstrap's default padding for inputs and buttons */
-            text-align: left;
-        }
-        .book-action {
-            text-align: right;
-        }
-        .book-header {
-            font-weight: bold;
-            background-color: #f8f9fa; /* Light grey background similar to Bootstrap's default table header */
-        }
-        .book-entry:nth-child(even) {
-            background-color: #f2f2f2; /* Zebra striping for entries */
-        }
-    </style>
+   
 </head>
 <body>
 <div>
@@ -39,13 +18,15 @@
     </nav>
 
     <!-- Search and Filter Form -->
-    <form action="{{ url_for('user_dashboard') }}" method="GET" class='search'>
-        <input type="text" placeholder="Search sections" aria-label="Search" name="query">
-        <div>
-            <button  type="submit">Search</button>
-        </div>
-        
-    </form>
+   
+
+    <div class="search-box">
+        <form action="{{ url_for('librarian_dashboard') }}" method="GET" style="display: flex; width: 100%;">
+            <input type="text" placeholder="Search Sections" name="query">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
     <div class="book-header">
         <div class="book-title">Title</div>
         <div class="book-author">Author</div>

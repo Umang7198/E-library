@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, url_for, session,abort
+from flask import Flask, request, redirect, render_template, url_for, session,abort,flash
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit,os
 from migrations.config import app,db
@@ -64,7 +64,8 @@ def librarian_login():
             session['librarian_id'] = librarian.id
             return redirect(url_for('librarian_dashboard'))
         else:
-            return render_template('librarian_login.html')
+            flash('Incorrect password. Please try again.', 'error')
+            return redirect(url_for('librarian_login'))
 
     # If it's a GET request, just render the login page
     return render_template('librarian_login.html')
@@ -89,6 +90,8 @@ def user_login():
             session['user_id'] = user.id
             return redirect(url_for('user_dashboard'))
         else:
+            flash('Incorrect password. Please try again.', 'error')
+
             return render_template('user_login.html')
 
     # If it's a GET request, just render the login page

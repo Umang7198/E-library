@@ -41,16 +41,21 @@
     </div>
 
     <!-- Search form for sections -->
-    <form action="{{ url_for('librarian_dashboard') }}" method="GET" class='search'>
-        <input type="text" placeholder="Search sections" aria-label="Search" name="query">
-        <div>
-            <a href="{{ url_for('add_section_form') }}" style="float:left" >Add New Section</a>
+    <div class="search-box">
+        <form action="{{ url_for('librarian_dashboard') }}" method="GET" style="display: flex; width: 100%;">
+            <input type="text" placeholder="Search Sections" name="query">
+            <button type="submit">Search</button>
+        </form>
+        <button onclick="window.location.href='{{ url_for('add_section_form') }}';"
+        style="background-color: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); cursor: pointer; transition: background-color 0.3s ease, box-shadow 0.3s ease;"
+        onmouseover="this.style.backgroundColor='#218838'; this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.2)';"
+        onmouseout="this.style.backgroundColor='#28a745'; this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.1)';"
+        onmousedown="this.style.backgroundColor='#1e7e34'; this.style.boxShadow='0 2px 4px rgba(0, 0, 0, 0.2)';"
+        onmouseup="this.style.backgroundColor='#218838'; this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.2)';">
+    Add Section
+</button>
 
-            <button  type="submit">Search</button>
-        </div>
-        
-    </form>
-
+    </div>
     <!-- List of Sections -->
     {% for section in sections %}
     <div class="section">
