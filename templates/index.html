@@ -6,10 +6,20 @@
     <title>Login Selection</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
+<style>
+    body {
+        height: 100%;
+        background-image: url('static/images/lib.jpg');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    }
+</style>
 <body>
 <div class="container text-center mt-5">
-    <h1>Library Management System</h1>
-    <h3>Select Your Role</h3>
+    <h1 style="color:white">Library Management System</h1>
+    <h3 style="color:white">Select Your Role</h3>
     <div class="mt-4">
         <a href="{{ url_for('user_login') }}" class="btn btn-primary">User Login</a>
         <a href="{{ url_for('librarian_login') }}" class="btn btn-secondary">Librarian Login</a>
