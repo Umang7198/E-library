@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .statistics-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .statistics-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .statistics-item {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container statistics-container">
+        <h1 class="statistics-header">Application Statistics</h1>
+        <div class="statistics-item">Active Users: {{ statistics.active_users }}</div>
+        <div class="statistics-item">Grant Requests: {{ statistics.grant_requests }}</div>
+        <div class="statistics-item">E-books Issued: {{ statistics.ebooks_issued }}</div>
+        <div class="statistics-item">E-books Revoked: {{ statistics.ebooks_revoked }}</div>
+        <div class="text-center">
+            <a href="{{ url_for('librarian_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

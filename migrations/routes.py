@@ -402,6 +402,47 @@ def revoke_overdue_books():
         issue.revoked = True
     db.session.commit()
 
+def get_statistics():
+    # Active users: Assuming 'active' means users with at least one issued book
+    active_users = User.query.join(Issue, User.id == Issue.user_id).filter(Issue.status == 'issued').distinct().count()
+
+    # Grant requests: Assuming these are issues with status 'requested'
+    grant_requests = Issue.query.filter_by(status='requested').count()
+
+    # E-books issued
+    ebooks_issued = Issue.query.filter_by(status='issued').count()
+
+    # E-books revoked: Assuming revoked books have status 'returned' or `revoked` set to True
+    ebooks_revoked = Issue.query.filter((Issue.status == 'returned') | (Issue.revoked == True)).count()
+
+    statistics = {
+        'active_users': active_users,
+        'grant_requests': grant_requests,
+        'ebooks_issued': ebooks_issued,
+        'ebooks_revoked': ebooks_revoked
+    }
+
+    return statistics
+
+@app.route('/statistics')
+def statistics():
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+
+    # Fetch statistics
+    statistics = get_statistics()
+
+    return render_template('stats_librarian.html', statistics=statistics)
+
+
+
+
+
+
+
+
+
+
 # Initialize the scheduler
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=revoke_overdue_books, trigger='interval', days=1)

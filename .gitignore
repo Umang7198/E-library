@@ -3,3 +3,4 @@ docx
 __pycache__
 venv
 instance
+database.db
