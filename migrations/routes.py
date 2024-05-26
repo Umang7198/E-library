@@ -390,6 +390,24 @@ def issue_book_to_user(issue_id):
 
     return redirect(url_for('monitor_books'))
 
+@app.route('/decline_book_request/<int:issue_id>', methods=['POST'])
+def decline_book_request(issue_id):
+    # Ensure the user is logged in
+    if 'librarian_id' not in session:
+        return redirect(url_for('librarian_login'))
+
+    # Get the issue by its ID
+    issue = Issue.query.get_or_404(issue_id)
+
+    # Check if the issue belongs to the logged-in user
+    # if issue.user_id != session['user_id']:
+    #     abort(403)  # Forbidden, as the issue does not belong to the user
+
+    # Mark the issue as declined
+    issue.status = 'returned'
+    db.session.delete(issue)
+    db.session.commit()
+    return redirect(url_for('librarian_dashboard'))
 
 def revoke_overdue_books():
     overdue_issues = Issue.query.filter(

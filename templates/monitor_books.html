@@ -3,30 +3,39 @@
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-
+    <style>
+        .content-container {
+            margin-top: 50px; /* Adjust this value as needed */
+        }
+    </style>
     <title>Monitor Books</title>
 </head>
 <body>
-<div>
+<div class="content-container">
     <h1>Monitor Books</h1>
     <div>
         {% for issue in issues %}
-            <div >
+            <div class="ml-5">
                 <p>
                     <strong>Book Title:</strong> {{ issue.book.title }}<br>
                     <strong>Issued To:</strong> {{ issue.user.name }}<br>
                     <strong>Date Issued:</strong> {{ issue.date_issued }}<br>
                     <strong>Return Date:</strong> {{ issue.return_date }}
                 </p>
-                <form action="{{ url_for('issue_book_to_user', issue_id=issue.id) }}" method="post">
+                <div class="d-flex">
+                <form action="{{ url_for('issue_book_to_user', issue_id=issue.id) }}" method="post" class="mr-3">
                     <button type="submit">Issue</button>
                 </form>
+                <form action="{{ url_for('decline_book_request', issue_id=issue.id) }}" method="post">
+                    <button type="submit">Decline</button>
+                </form>
+            </div>
             </div>
         {% else %}
             <p>No pending requests.</p>
         {% endfor %}
     </div>
-    <a href="{{ url_for('librarian_dashboard') }}">Back to Dashboard</a>
+    <button onclick="window.location.href='{{ url_for('librarian_dashboard') }}';" class="back-button">Back</button>
 </div>
 
 </body>
